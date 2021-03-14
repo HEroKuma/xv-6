@@ -37,12 +37,6 @@ sys_kill(void)
   return kill(pid);
 }
 
-int
-sys_getpid(void)
-{
-  return myproc()->pid;
-}
-
 int sys_settickets(void){
   int n;
   if(argint(0, &n) < 0)
@@ -57,6 +51,12 @@ int sys_getpinfo(void){
     return -1;
   getpinfo(pt);
   return 0;
+}
+
+int
+sys_getpid(void)
+{
+  return myproc()->pid;
 }
 
 int
