@@ -13,7 +13,7 @@
 
 #define RAND_MAX 0x7fffffff
 
-staric unsigned long mt[N];
+static unsigned long mt[N];
 static int mti=N+1;
 
 void sgenrand(unsigned long seed){

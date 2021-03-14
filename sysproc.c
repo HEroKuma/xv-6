@@ -7,7 +7,6 @@
 #include "mmu.h"
 #include "proc.h"
 #include "pstat.h"
-
 int
 sys_fork(void)
 {
@@ -37,7 +36,9 @@ sys_kill(void)
   return kill(pid);
 }
 
-int sys_settickets(void){
+int 
+sys_settickets(void)
+{
   int n;
   if(argint(0, &n) < 0)
     return -1;
@@ -45,13 +46,16 @@ int sys_settickets(void){
   return 0;
 }
 
-int sys_getpinfo(void){
+int 
+sys_getpinfo(void)
+{
   struct pstat *pt;
-  if(argptr(0, (char**)&pt, 1) < 0)
+  if(argptr(0,(char**)&pt, 1) < 0)
     return -1;
   getpinfo(pt);
   return 0;
 }
+
 
 int
 sys_getpid(void)
