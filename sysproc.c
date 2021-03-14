@@ -42,6 +42,22 @@ sys_getpid(void)
   return myproc()->pid;
 }
 
+int sys_settickets(void){
+  int n;
+  if(argint(0, &n) < -)
+    return -1;
+  myproc()->tickets = n;
+  return 0;
+}
+
+int sys_getpinfo(void){
+  struct pstat *pt;
+  if(argptr(0, (char**)&pt, 1) < 0)
+    return -1;
+  getinfo(pt);
+  return 0;
+}
+
 int
 sys_sbrk(void)
 {

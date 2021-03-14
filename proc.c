@@ -112,6 +112,9 @@ found:
   memset(p->context, 0, sizeof *p->context);
   p->context->eip = (uint)forkret;
 
+  p->tickets = 1;
+  p->ticks = 0;
+
   return p;
 }
 
@@ -198,6 +201,8 @@ fork(void)
   }
   np->sz = curproc->sz;
   np->parent = curproc;
+  np->tickets = curproc->tickets;
+  np->ticks = 0;
   *np->tf = *curproc->tf;
 
   // Clear %eax so that fork returns 0 in the child.
@@ -319,16 +324,42 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+
+int getpinfo(struct pstat* pt){
+  struct proc* p;
+  int processid = 0;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+    if(p->state != UNUSED){
+      pt->inuse[processid] = 1;
+      pt->pid[processid] = p->pid;
+      pt->tickets[processid] = p->tickets;
+      pt->ticks[processid] = p->ticks;
+    }
+    processid += 1;
+  }
+  return 0;
+}
+
 void
 scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  c->proc = 0;
+  //c->proc = 0;
   
   for(;;){
     // Enable interrupts on this processor.
     sti();
+
+    int sum = 0;
+    int total_tickets = 0;
+
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state == RUNNABLE)
+        total_tickets += p->tickets;
+    }
+
+    long winner = random_at_most(total_tickets);
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
@@ -336,12 +367,18 @@ scheduler(void)
       if(p->state != RUNNABLE)
         continue;
 
+      sum += p->tickets;
+      if(sum < winner){
+        continue;
+      }
+
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      p->ticks += 1;
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
@@ -349,6 +386,7 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      break;
     }
     release(&ptable.lock);
 
