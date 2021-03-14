@@ -26,7 +26,7 @@ char* sbrk(int);
 int sleep(int);
 int uptime(void);
 int settickets(int tickets);
-int getinfo(struct pstat*);
+int getpinfo(struct pstat*);
 
 // ulib.c
 int stat(const char*, struct stat*);
